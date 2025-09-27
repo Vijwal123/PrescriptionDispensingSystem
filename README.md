@@ -1,50 +1,30 @@
 # PrescriptionDispensingSystem
 
-Backend Framework: GoLang
-Database: PostgreSQL (transactional DB required)
-Optional: Redis (for locks or queues)
-Documentation: Swagger/OpenAPI
-Testing: Unit tests, including concurrent access tests
-Version Control: Git + GitHub
+A backend service built with GoLang and PostgreSQL for managing users, medicines, and prescriptions in a hospital or pharmacy environment. The API supports role-based access control with JWT authentication and ensures safe stock management, including concurrent updates and atomic operations.
 
-Description
+# Key Features:
+User Management: Roles – Doctor, Pharmacist, Admin.
+Admin can manage the medicine catalog.
+Doctors can issue prescriptions.
+Pharmacists can dispense medicine and update stock.
 
-A backend system to manage prescriptions and medicine stock in hospitals or pharmacies. The system supports role-based access control with Admin, Doctor, and Pharmacist roles, ensuring proper authorization for each action.
+# Medicine Catalog & Stock Management:
+Add, view, and update medicines.
+Stock updates are atomic to prevent race conditions.
 
-Features
+# Prescription Handling:
+Doctors issue prescriptions with patient name, medicine, and quantity.
+Dispensing prescriptions decrements stock automatically.
 
-User Management
+# Security: JWT-based authentication and authorization for all endpoints.
 
-Roles: Doctor, Pharmacist, Admin
+# Testing: Includes unit and concurrency tests for stock operations.
 
+# Documentation: Swagger/OpenAPI documentation included.
+
+# Tech Stack:
+Backend: GoLang + Fiber
+Database: PostgreSQL
 Authentication: JWT tokens
-
-Authorization:
-
-Doctors can issue prescriptions
-
-Pharmacists can dispense medicine and update stock
-
-Admin can manage medicine catalog
-
-Medicine Catalog & Stock
-
-Admin can add new medicines with details: name, dosage form, stock quantity
-
-Pharmacists can view stock levels
-
-Prescription Handling
-
-Doctors can issue a prescription for a patient (patient name, medicine, quantity)
-
-When a prescription is dispensed, the stock decrements automatically
-
-Atomic stock updates to prevent race conditions
-
-Concurrency & Transactions
-
-Multiple concurrent prescriptions handled safely
-
-Stock updates are atomic to avoid negative stock
-
-Race conditions are prevented when multiple pharmacists dispense the same medicine
+Testing: Unit tests + concurrency tests
+Version Control: Git + GitHub
