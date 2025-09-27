@@ -1,0 +1,288 @@
+basePath: /
+definitions:
+  models.LoginInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  models.Medicine:
+    properties:
+      dosage_form:
+        type: string
+      medicine_name:
+        type: string
+      stock_quantity:
+        type: integer
+    type: object
+  models.Prescription:
+    properties:
+      dosage_form:
+        type: string
+      id:
+        type: integer
+      medicine_name:
+        type: string
+      patient_name:
+        type: string
+      quantity:
+        type: integer
+    type: object
+  models.UserDetails:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: youremail@example.com
+    name: Your Name
+  description: Backend service for prescriptions and medicine stock management
+  title: Prescription API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email & password, returns JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login user
+      tags:
+      - Auth
+  /medicine:
+    post:
+      consumes:
+      - application/json
+      description: Admin adds medicine to stock
+      parameters:
+      - description: Medicine data
+        in: body
+        name: medicine
+        required: true
+        schema:
+          $ref: '#/definitions/models.Medicine'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Medicine'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add a new medicine
+      tags:
+      - Medicine
+  /medicine/{medicine_name}:
+    delete:
+      description: Admin removes medicine from stock
+      parameters:
+      - description: Medicine name
+        in: path
+        name: medicine_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Medicine Deleted
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a medicine
+      tags:
+      - Medicine
+  /medicines:
+    get:
+      description: Pharmacist views stock levels
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Medicine'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all medicines
+      tags:
+      - Medicine
+  /presc:
+    post:
+      consumes:
+      - application/json
+      description: Doctor creates a prescription for a patient
+      parameters:
+      - description: Prescription data
+        in: body
+        name: prescription
+        required: true
+        schema:
+          $ref: '#/definitions/models.Prescription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Prescription'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create prescription
+      tags:
+      - Prescription
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Admin can create new users
+      parameters:
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserDetails'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserDetails'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new user
+      tags:
+      - Users
+  /updatemeds:
+    post:
+      consumes:
+      - application/json
+      description: Pharmacist dispenses medicine and updates stock
+      parameters:
+      - description: Dispense data
+        in: body
+        name: dispense
+        required: true
+        schema:
+          $ref: '#/definitions/models.Medicine'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Medicine'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Dispense medicine stock
+      tags:
+      - Medicine
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
