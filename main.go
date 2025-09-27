@@ -34,7 +34,7 @@ func main() {
 	app.Delete("/medicine/:medicine_name", middleware.AdminVerification, handlers.RemoveMedicine)
 	app.Get("/medicines",middleware.AdminVerification, handlers.GetallMeds)
 	app.Post("/updatemeds", middleware.PharmacistVerification, handlers.DispenseStock)
-	app.Post("/presc",handlers.MakePresc)
+	app.Post("/presc",middleware.DoctorVerification,handlers.MakePresc)
 
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
