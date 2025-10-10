@@ -23,11 +23,11 @@ import (
 // @Failure 401 {object} map[string]string
 // @Security BearerAuth
 // @Router /register [post]
-func Register(fi *fiber.Ctx) error {
+func Register(c *fiber.Ctx) error {
 	var user models.UserDetails
 
-	if err := fi.BodyParser(&user); err != nil {
-		return fi.JSON("invalid input")
+	if err := c.BodyParser(&user); err != nil {
+		return c.JSON("invalid input")
 	}
 
 	user.Role = strings.Title(strings.ToLower(user.Role))
@@ -36,26 +36,26 @@ func Register(fi *fiber.Ctx) error {
 	err := db.Postdb.QueryRow(context.Background(),
 		`SELECT EXISTS(SELECT 1 FROM users WHERE role='Admin')`).Scan(&adminExists)
 	if err != nil {
-		return fi.JSON(err.Error())
+		return c.JSON(err.Error())
 	}
 
 	if user.Role == "Admin" && adminExists {
-		return fi.JSON("Admin already exists")
+		return c.JSON("Admin already exists")
 	}
 
 	var exists bool
 	err = db.Postdb.QueryRow(context.Background(),
 		`SELECT EXISTS(SELECT 1 FROM users WHERE email=$1)`, user.Email).Scan(&exists)
 	if err != nil {
-		return fi.JSON(err.Error())
+		return c.JSON(err.Error())
 	}
 	if exists {
-		return fi.JSON("User already exists")
+		return c.JSON("User already exists")
 	}
 
 	hashpassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return fi.JSON("Cannot hash password")
+		return c.JSON("Cannot hash password")
 	}
 	user.Password = string(hashpassword)
 
@@ -63,10 +63,10 @@ func Register(fi *fiber.Ctx) error {
 		`INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,$4) RETURNING id,name,email,password,role`,
 		user.Name, user.Email, user.Password, user.Role).Scan(&user.Id, &user.Name, &user.Email, &user.Password, &user.Role)
 	if err != nil {
-		return fi.JSON(err.Error())
+		return c.JSON(err.Error())
 	}
 
-	return fi.JSON(user)
+	return c.JSON(user)
 }
 
 // Login godoc
@@ -79,29 +79,29 @@ func Register(fi *fiber.Ctx) error {
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
 // @Router /login [post]
-func Login(fi *fiber.Ctx) error {
+func Login(c *fiber.Ctx) error {
 	var input models.LoginInput
-	err := fi.BodyParser(&input)
+	err := c.BodyParser(&input)
 	if err != nil {
-		return fi.JSON("invalid input")
+		return c.JSON("invalid input")
 	}
 
 	var user models.UserDetails
 	err = db.Postdb.QueryRow(context.Background(), `SELECT id, name, email, role, password FROM users WHERE email=$1`, input.Email).Scan(&user.Id, &user.Name, &user.Email, &user.Role, &user.Password)
 	if err != nil {
-		return fi.JSON("user not found")
+		return c.JSON("user not found")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
 	if err != nil {
-		return fi.JSON("invalid password")
+		return c.JSON("invalid password")
 	}
 
 	token, err := utils.GenerateToken(user.Id, user.Role)
 	if err != nil {
-		return fi.JSON("token not generated")
+		return c.JSON("token not generated")
 	}
 
-	return fi.JSON(fiber.Map{"token": token, "user": user})
+	return c.JSON(fiber.Map{"token": token, "user": user})
 
 }

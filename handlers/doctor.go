@@ -20,10 +20,10 @@ import (
 // @Failure 401 {object} map[string]string
 // @Security BearerAuth
 // @Router /presc [post]
-func MakePresc(fi *fiber.Ctx) error {
+func MakePresc(c *fiber.Ctx) error {
 	var prescription models.Prescription
 
-	err := fi.BodyParser(&prescription)
+	err := c.BodyParser(&prescription)
 	if err != nil {
 		return err
 	}
@@ -34,5 +34,5 @@ func MakePresc(fi *fiber.Ctx) error {
 		return err
 	}
 
-	return fi.JSON(prescription)
+	return c.JSON(prescription)
 }

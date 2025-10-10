@@ -4,7 +4,7 @@ import (
 	"context"
 	"prescription/db"
 	"prescription/models"
-	"github.com/jackc/pgx/v5" 
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -17,7 +17,7 @@ import (
 // @Failure 401 {object} map[string]string
 // @Security BearerAuth
 // @Router /medicines [get]
-func GetallMeds(fi *fiber.Ctx) error {
+func GetallMeds(c *fiber.Ctx) error {
 	res, err := db.Postdb.Query(context.Background(), `SELECT medicine_name, dosage_form, stock_quantity FROM medicine`)
 	if err != nil {
 		return err
@@ -32,9 +32,8 @@ func GetallMeds(fi *fiber.Ctx) error {
 		medicines = append(medicines, a)
 	}
 
-	return fi.JSON(medicines)
+	return c.JSON(medicines)
 }
-
 
 // DispenseStock godoc
 // @Summary Dispense medicine stock
@@ -47,11 +46,11 @@ func GetallMeds(fi *fiber.Ctx) error {
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
 // @Security BearerAuth
-// @Router /updatemeds [post]	
-func DispenseStock(fi *fiber.Ctx) error {
+// @Router /updatemeds [post]
+func DispenseStock(c *fiber.Ctx) error {
 	var dis models.Medicine
-	if err := fi.BodyParser(&dis); err != nil {
-		return fi.Status(400).JSON("invalid input")
+	if err := c.BodyParser(&dis); err != nil {
+		return c.Status(400).JSON("invalid input")
 	}
 
 	query := `
@@ -66,12 +65,9 @@ func DispenseStock(fi *fiber.Ctx) error {
 		dis.Stock_Quantity, dis.Medicine_Name, dis.Dosage_Form).Scan(&newStock)
 
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return fi.Status(400).JSON("Medicine not found or insufficient stock")
-		}
-		return fi.Status(500).JSON(err.Error())
+		return c.Status(500).JSON(err.Error())
 	}
 
 	dis.Stock_Quantity = newStock
-	return fi.JSON(dis)
+	return c.JSON(dis)
 }

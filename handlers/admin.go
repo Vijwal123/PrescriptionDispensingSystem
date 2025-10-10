@@ -21,16 +21,16 @@ import (
 // @Failure 401 {object} map[string]string
 // @Security BearerAuth
 // @Router /medicine [post]
-func Medicine(fi *fiber.Ctx) error {
+func Medicine(c *fiber.Ctx) error {
 	var medicine models.Medicine
-	if err := fi.BodyParser(&medicine); err != nil {
-		return fi.JSON("Invalid Input")
+	if err := c.BodyParser(&medicine); err != nil {
+		return c.JSON("Invalid Input")
 	}
 
 	ctx := context.Background()
 	tx, err := db.Postdb.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		return fi.Status(500).JSON(err.Error())
+		return c.Status(500).JSON(err.Error())
 	}
 	defer tx.Rollback(ctx)
 
@@ -51,10 +51,10 @@ func Medicine(fi *fiber.Ctx) error {
                 RETURNING stock_quantity
             `, medicine.Medicine_Name, medicine.Dosage_Form, medicine.Stock_Quantity).Scan(&medicine.Stock_Quantity)
 			if err != nil {
-				return fi.Status(500).JSON(err.Error())
+				return c.Status(500).JSON(err.Error())
 			}
 		} else {
-			return fi.Status(500).JSON(err.Error())
+			return c.Status(500).JSON(err.Error())
 		}
 	} else {
 
@@ -66,15 +66,15 @@ func Medicine(fi *fiber.Ctx) error {
             RETURNING stock_quantity
         `, newStock, medicine.Medicine_Name, medicine.Dosage_Form).Scan(&medicine.Stock_Quantity)
 		if err != nil {
-			return fi.Status(500).JSON(err.Error())
+			return c.Status(500).JSON(err.Error())
 		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return fi.Status(500).JSON(err.Error())
+		return c.Status(500).JSON(err.Error())
 	}
 
-	return fi.JSON(medicine)
+	return c.JSON(medicine)
 }
 
 // RemoveMedicine godoc
@@ -88,17 +88,17 @@ func Medicine(fi *fiber.Ctx) error {
 // @Failure 401 {object} map[string]string
 // @Security BearerAuth
 // @Router /medicine/{medicine_name} [delete]
-func RemoveMedicine(fi *fiber.Ctx) error {
+func RemoveMedicine(c *fiber.Ctx) error {
 
-	medname := fi.Params("medicine_name")
+	medname := c.Params("medicine_name")
 	res, err := db.Postdb.Exec(context.Background(), `DELETE FROM medicine WHERE medicine_name=$1`, medname)
 	if err != nil {
-		return fi.Status(404).JSON("Failed to delete medicine")
+		return c.Status(404).JSON("Failed to delete medicine")
 	}
 
 	if res.RowsAffected() == 0 {
-		return fi.Status(404).JSON("medicine not found")
+		return c.Status(404).JSON("medicine not found")
 	}
 
-	return fi.JSON("Medicine Deleted")
+	return c.JSON("Medicine Deleted")
 }
